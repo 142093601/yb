@@ -17,6 +17,8 @@ const routes = [
     children: [
       { path: '', name: 'Home', component: () => import('../views/front/Home.vue') },
       { path: 'news/:id', name: 'NewsDetail', component: () => import('../views/front/NewsDetail.vue') },
+      { path: 'search', name: 'Search', component: () => import('../views/front/Search.vue') },
+      { path: 'archive', name: 'Archive', component: () => import('../views/front/Archive.vue') },
       { path: 'profile', name: 'Profile', component: () => import('../views/front/Profile.vue'), meta: { requiresAuth: true } }
     ]
   },

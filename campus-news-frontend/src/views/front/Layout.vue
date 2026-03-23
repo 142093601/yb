@@ -13,6 +13,12 @@
           <router-link to="/" class="nav-item" :class="{ active: $route.path === '/' }">
             <el-icon><HomeFilled /></el-icon>首页
           </router-link>
+          <router-link to="/search" class="nav-item" :class="{ active: $route.path === '/search' }">
+            <el-icon><Search /></el-icon>搜索
+          </router-link>
+          <router-link to="/archive" class="nav-item" :class="{ active: $route.path === '/archive' }">
+            <el-icon><Collection /></el-icon>归档
+          </router-link>
         </nav>
         <div class="nav-actions">
           <template v-if="!userStore.isLoggedIn">

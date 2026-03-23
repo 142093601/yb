@@ -36,6 +36,9 @@
                   <el-dropdown-item disabled>
                     <el-tag :type="roleTag" size="small">{{ roleLabel }}</el-tag>
                   </el-dropdown-item>
+                  <el-dropdown-item @click="$router.push('/profile')">
+                    <el-icon><User /></el-icon>个人中心
+                  </el-dropdown-item>
                   <el-dropdown-item divided @click="handleLogout">
                     <el-icon><SwitchButton /></el-icon>退出登录
                   </el-dropdown-item>

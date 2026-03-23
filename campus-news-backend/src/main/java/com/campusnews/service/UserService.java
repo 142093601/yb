@@ -2,7 +2,9 @@ package com.campusnews.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.campusnews.common.Result;
+import com.campusnews.dto.ChangePasswordDTO;
 import com.campusnews.dto.LoginDTO;
+import com.campusnews.dto.UpdateProfileDTO;
 import com.campusnews.dto.UserDTO;
 import com.campusnews.entity.User;
 
@@ -20,8 +22,11 @@ public interface UserService extends IService<User> {
     /** 更新用户信息 */
     Result<?> updateUser(UserDTO userDTO);
 
-    /** 修改密码 */
-    Result<?> changePassword(Long userId, String oldPassword, String newPassword);
+    /** 修改个人信息（用户自助） */
+    Result<?> updateProfile(Long userId, UpdateProfileDTO dto);
+
+    /** 修改密码（用户自助） */
+    Result<?> changePassword(Long userId, ChangePasswordDTO dto);
 
     /** 管理员：分页查询用户 */
     Result<?> listUsers(String keyword, Integer page, Integer size);

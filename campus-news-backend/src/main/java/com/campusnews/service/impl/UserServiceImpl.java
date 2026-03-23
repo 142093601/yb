@@ -6,7 +6,9 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.campusnews.common.JwtUtil;
 import com.campusnews.common.PageResult;
 import com.campusnews.common.Result;
+import com.campusnews.dto.ChangePasswordDTO;
 import com.campusnews.dto.LoginDTO;
+import com.campusnews.dto.UpdateProfileDTO;
 import com.campusnews.dto.UserDTO;
 import com.campusnews.entity.User;
 import com.campusnews.mapper.UserMapper;
@@ -114,15 +116,47 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public Result<?> changePassword(Long userId, String oldPassword, String newPassword) {
+    public Result<?> updateProfile(Long userId, UpdateProfileDTO dto) {
         User user = getById(userId);
         if (user == null) {
             return Result.error("用户不存在");
         }
-        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+        if (StringUtils.hasText(dto.getNickname())) {
+            user.setNickname(dto.getNickname());
+        }
+        if (dto.getEmail() != null) {
+            user.setEmail(dto.getEmail());
+        }
+        if (dto.getPhone() != null) {
+            user.setPhone(dto.getPhone());
+        }
+        if (dto.getAvatar() != null) {
+            user.setAvatar(dto.getAvatar());
+        }
+        updateById(user);
+
+        // 返回更新后的用户信息
+        Map<String, Object> data = new HashMap<>();
+        data.put("userId", user.getId());
+        data.put("username", user.getUsername());
+        data.put("nickname", user.getNickname());
+        data.put("role", user.getRole());
+        data.put("avatar", user.getAvatar());
+        data.put("email", user.getEmail());
+        data.put("phone", user.getPhone());
+        return Result.success("更新成功", data);
+    }
+
+    @Override
+    public Result<?> changePassword(Long userId, ChangePasswordDTO dto) {
+        User user = getById(userId);
+        if (user == null) {
+            return Result.error("用户不存在");
+        }
+        if (!passwordEncoder.matches(dto.getOldPassword(), user.getPassword())) {
             return Result.error("原密码错误");
         }
-        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
         updateById(user);
         return Result.success("密码修改成功");
     }

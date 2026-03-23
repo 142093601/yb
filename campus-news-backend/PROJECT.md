@@ -69,7 +69,9 @@ workspace/（Git 仓库根目录）
 │       │   │   ├── LoginDTO.java                # username + password
 │       │   │   ├── UserDTO.java                 # 注册/编辑用户
 │       │   │   ├── NewsDTO.java                 # 创建/编辑新闻
-│       │   │   └── CommentDTO.java              # 发表评论
+│       │   │   ├── CommentDTO.java              # 发表评论
+│       │   │   ├── UpdateProfileDTO.java        # 🆕 修改个人信息（nickname/email/phone/avatar）
+│       │   │   └── ChangePasswordDTO.java       # 🆕 修改密码（oldPassword + newPassword，带校验）
 │       │   │
 │       │   ├── mapper/                          # MyBatis-Plus Mapper 接口
 │       │   │   ├── UserMapper.java              # extends BaseMapper<User>，基本是空接口
@@ -89,7 +91,7 @@ workspace/（Git 仓库根目录）
 │       │   │       └── CommentServiceImpl.java  # 评论默认 status=0（待审核）
 │       │   │
 │       │   └── controller/
-│       │       ├── AuthController.java          # /api/auth          登录/注册/当前用户
+│       │       ├── AuthController.java          # /api/auth          登录/注册/当前用户/修改信息/改密码
 │       │       ├── NewsController.java          # /api/news          前台：列表/详情/置顶/点赞
 │       │       ├── AdminNewsController.java     # /api/admin/news    后台：CRUD/发布/置顶
 │       │       ├── CategoryController.java      # /api/category      分类（前台+后台合并一个Controller）
@@ -116,7 +118,7 @@ workspace/（Git 仓库根目录）
         ├── App.vue               # 全局样式重置 + 自定义滚动条 + 统一主色调(#4f6ef7)
         │
         ├── api/                  # 接口层，每个模块一个文件
-        │   ├── auth.js           # login, register, getUserInfo
+        │   ├── auth.js           # login, register, getUserInfo, updateProfile, changePassword
         │   ├── news.js           # getNewsList, getNewsDetail, getTopNews, likeNews
         │   ├── category.js       # 前台 getCategories + 后台 CRUD
         │   ├── comment.js        # 前台 getComments/addComment + 后台 audit/delete
@@ -132,32 +134,37 @@ workspace/（Git 仓库根目录）
         │   └── user.js           # Pinia Store：
         │                           # - token, userInfo（同步到 localStorage）
         │                           # - isLoggedIn, isAdmin, isEditor, canManage 计算属性
-        │                           # - setLogin(data), logout()
+        │                           # - setLogin(data), updateUserInfo(data), logout()
         │
         ├── router/
         │   └── index.js          # 路由定义 + beforeEach 守卫
-        │                           # - meta.requiresAuth → 检查 token
+        │                           # - meta.requiresAuth → 检查 token（含 /profile）
         │                           # - meta.requiresAdmin → 检查 role=ADMIN
         │
         └── views/
-            ├── front/            # 前台页面（v2 已全面美化）
-            │   ├── Layout.vue    # 🆕 毛玻璃顶栏 + Logo品牌区 + 导航高亮
-            │   │                   # - 用户头像 + 下拉菜单（显示角色标签）
+            ├── front/            # 前台页面（v2/v3 持续美化）
+            │   ├── Layout.vue    # 毛玻璃顶栏 + Logo品牌区 + 导航高亮
+            │   │                   # - 用户头像 + 下拉菜单（角色标签 + 个人中心入口）
             │   │                   # - 注册按钮（渐变色）
             │   │                   # - 丰富 Footer（品牌/快速导航/分类链接/版权）
-            │   ├── Login.vue     # 🆕 左右分栏布局：
+            │   ├── Login.vue     # 左右分栏布局：
             │   │                   # - 左：品牌展示区（蓝紫渐变）+ 功能亮点
             │   │                   # - 右：登录表单（圆角按钮 + 图标输入框）
             │   │                   # - 移动端自动隐藏左侧面板
-            │   ├── Register.vue  # 🆕 同样左右分栏，青绿渐变 + 注册福利展示
-            │   ├── Home.vue      # 🆕 改动最大的页面：
+            │   ├── Register.vue  # 同样左右分栏，青绿渐变 + 注册福利展示
+            │   ├── Profile.vue   # 🆕 个人中心：
+            │   │                   # - 顶部渐变头像卡片（头像 + 昵称 + 角色标签）
+            │   │                   # - 基本信息展示（用户名/昵称/邮箱/手机号/角色）
+            │   │                   # - 编辑资料表单（昵称/邮箱/手机号/头像URL）
+            │   │                   # - 修改密码弹窗（旧密码验证 + 新密码确认）
+            │   │                   # - 修改后同步更新 Pinia store + localStorage
+            │   ├── Home.vue      # 🆕 v3 改版：
             │   │                   # - Hero 统计区（渐变背景 + 新闻数/分类数/用户数）
-            │   │                   # - 热点推荐：3格卡片式置顶新闻
-            │   │                   # - 分类筛选：pill按钮式（带emoji图标，点击切换）
-            │   │                   # - 新闻列表：双列卡片网格（封面图+标签+摘要+元信息）
-            │   │                   # - 侧边栏：数据统计 / 分类快捷入口 / 热门排行TOP5
-            │   │                   # - 响应式布局（≤1024px 单列，≤768px 全部堆叠）
-            │   └── NewsDetail.vue # 🆕 改进：
+            │   │                   # - 轮播图（el-carousel 展示置顶热点，4秒切换，封面背景 + 渐变遮罩）
+            │   │                   # - 三栏布局：左分类导航 / 中新闻列表（横向卡片）/ 右热门排行+公告
+            │   │                   # - 分类高亮切换，搜索框
+            │   │                   # - 响应式：≤1200px 隐藏左栏，≤768px 单列堆叠
+            │   └── NewsDetail.vue # 改进：
             │                       # - 面包屑导航（首页 > 分类 > 正文）
             │                       # - 左右布局：正文 + 侧边文章信息卡
             │                       # - 优雅点赞按钮（hover动效 + 计数器）
@@ -294,6 +301,8 @@ workspace/（Git 仓库根目录）
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | GET | /api/auth/info | 当前用户信息 |
+| PUT | /api/auth/profile | 🆕 修改个人信息（nickname/email/phone/avatar） |
+| PUT | /api/auth/password | 🆕 修改密码（需旧密码验证，新密码6-20位） |
 | POST | /api/comments/add | 发表评论（默认待审核） |
 | POST | /api/news/like/{id} | 点赞 |
 
@@ -375,12 +384,48 @@ npm run dev
 2. **文件存储** — 本地 uploads 目录，生产建议改 OSS
 3. **评论** — 只支持一级回复，无嵌套楼中楼
 4. **搜索** — 标题 like 模糊搜索，无全文检索
-5. **默认头像** — 未上传头像时显示空白
+5. ~~默认头像~~ — ✅ v3 个人中心已支持头像设置，未设置时显示首字母占位
 6. **无单元测试**
 7. **详情页获取** — 编辑时用列表接口筛选，应直接 getById
 8. ~~前端样式~~ — ✅ v2 已美化，但仍有提升空间（可加暗色模式、动画等）
 
 ## 十、更新日志
+
+### v3 — 2026-03-24 个人中心 + 轮播图 + 主页三栏布局
+
+#### 新增功能
+- **个人中心（`Profile.vue`）**：顶部渐变头像卡片 + 基本信息展示 + 编辑资料表单 + 修改密码弹窗
+  - 支持修改昵称、邮箱、手机号、头像
+  - 修改密码需验证旧密码，新密码6-20位，二次确认
+  - 修改后同步更新 Pinia store 和 localStorage（顶栏即时刷新）
+- **首页轮播图**：el-carousel 展示置顶热点新闻，4秒自动切换，封面背景图 + 渐变遮罩 + 标题摘要
+- **用户下拉菜单**：新增「个人中心」入口
+
+#### 主页布局改版（v2 → v3）
+| | v2 | v3 |
+|---|---|---|
+| 布局 | 双栏（中+右） | 三栏（左分类 / 中新闻 / 右热门+公告） |
+| 热点展示 | 3格卡片 | 轮播图（el-carousel） |
+| 分类筛选 | pill按钮横排 | 左侧栏高亮列表 |
+| 新闻卡片 | 双列网格 | 单列横向卡片（左图右文） |
+| 右侧栏 | 统计+分类+TOP5 | 热门TOP8 + 公告 |
+| 响应式 | ≤1024单列 | ≤1200隐藏左栏，≤768单列 |
+
+#### 后端新增
+- `UpdateProfileDTO.java`：修改个人信息请求体
+- `ChangePasswordDTO.java`：修改密码请求体（含 @Valid 校验）
+- `PUT /api/auth/profile`：修改个人信息接口
+- `PUT /api/auth/password`：修改密码接口
+- `UserService.updateProfile()` / `UserServiceImpl.updateProfile()`：更新用户信息
+- `UserService.changePassword(ChangePasswordDTO)`：密码修改（BCrypt验证旧密码）
+
+#### 前端新增/修改
+- **新增** `Profile.vue`：个人中心页面
+- `Home.vue`：全面重写，新增轮播图 + 三栏布局
+- `Layout.vue`：下拉菜单增加个人中心入口
+- `router/index.js`：新增 `/profile` 路由（requiresAuth）
+- `stores/user.js`：新增 `updateUserInfo()` 方法
+- `api/auth.js`：新增 `updateProfile`、`changePassword` API
 
 ### v2 — 2026-03-24 前端美化 + 数据库种子数据
 

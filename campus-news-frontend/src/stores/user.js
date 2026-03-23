@@ -17,10 +17,19 @@ export const useUserStore = defineStore('user', () => {
       username: data.username,
       nickname: data.nickname,
       role: data.role,
-      avatar: data.avatar
+      avatar: data.avatar,
+      email: data.email,
+      phone: data.phone
     }
     localStorage.setItem('token', data.token)
     localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
+  }
+
+  function updateUserInfo(data) {
+    if (userInfo.value) {
+      userInfo.value = { ...userInfo.value, ...data }
+      localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
+    }
   }
 
   function logout() {
@@ -30,5 +39,5 @@ export const useUserStore = defineStore('user', () => {
     localStorage.removeItem('userInfo')
   }
 
-  return { token, userInfo, isLoggedIn, isAdmin, isEditor, canManage, setLogin, logout }
+  return { token, userInfo, isLoggedIn, isAdmin, isEditor, canManage, setLogin, updateUserInfo, logout }
 })

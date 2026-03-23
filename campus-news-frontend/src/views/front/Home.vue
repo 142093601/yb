@@ -27,59 +27,72 @@
       </div>
     </section>
 
-    <!-- 置顶新闻轮播 -->
-    <section class="featured-section" v-if="topNews.length">
-      <div class="section-header">
-        <h2><span class="section-icon">🔥</span> 热点推荐</h2>
-      </div>
-      <div class="featured-grid">
-        <div
-          v-for="(item, index) in topNews.slice(0, 3)"
-          :key="item.id"
-          class="featured-card"
-          :class="{ 'featured-main': index === 0 }"
-          @click="$router.push(`/news/${item.id}`)"
-        >
-          <div class="featured-img" v-if="item.coverImage">
-            <img :src="item.coverImage" />
+    <!-- 轮播图：热点推荐 -->
+    <section class="carousel-section" v-if="topNews.length">
+      <el-carousel :interval="4000" height="340px" indicator-position="outside" arrow="hover" class="news-carousel">
+        <el-carousel-item v-for="item in topNews" :key="item.id">
+          <div class="carousel-slide" @click="$router.push(`/news/${item.id}`)">
+            <div class="carousel-bg" :style="item.coverImage ? { backgroundImage: `url(${item.coverImage})` } : {}">
+              <div class="carousel-overlay"></div>
+            </div>
+            <div class="carousel-content">
+              <el-tag type="danger" effect="dark" size="small">🔥 热点</el-tag>
+              <h2 class="carousel-title">{{ item.title }}</h2>
+              <p class="carousel-summary" v-if="item.summary">{{ item.summary }}</p>
+              <div class="carousel-meta">
+                <span>{{ item.categoryName }}</span>
+                <span>{{ formatTime(item.publishTime) }}</span>
+                <span>👁 {{ item.viewCount }}</span>
+              </div>
+            </div>
           </div>
-          <div class="featured-img placeholder" v-else>
-            <span>{{ item.categoryName }}</span>
-          </div>
-          <div class="featured-overlay">
-            <el-tag type="danger" size="small" effect="dark">置顶</el-tag>
-            <h3>{{ item.title }}</h3>
-            <p v-if="index === 0" class="featured-summary">{{ item.summary }}</p>
-            <span class="featured-meta">{{ formatTime(item.publishTime) }} · 👁 {{ item.viewCount }}</span>
-          </div>
-        </div>
-      </div>
+        </el-carousel-item>
+      </el-carousel>
     </section>
 
-    <!-- 主内容区：侧边栏 + 新闻列表 -->
+    <!-- 主内容区 -->
     <div class="content-wrapper">
-      <div class="main-content">
-        <!-- 分类筛选 -->
-        <div class="filter-section">
-          <div class="category-tabs">
-            <button
-              class="cat-tab"
-              :class="{ active: activeCategory === '' }"
-              @click="activeCategory = ''"
-            >
-              <span class="cat-icon">📋</span> 全部
-            </button>
-            <button
-              v-for="c in categories"
-              :key="c.id"
-              class="cat-tab"
-              :class="{ active: activeCategory === c.id }"
-              @click="activeCategory = c.id"
-            >
-              <span class="cat-icon">{{ categoryIcon(c.name) }}</span>
-              {{ c.name }}
-            </button>
+      <!-- 左侧边栏 -->
+      <aside class="sidebar sidebar-left">
+        <!-- 分类导航 -->
+        <div class="sidebar-card">
+          <h3>📁 新闻分类</h3>
+          <ul class="sidebar-categories">
+            <li :class="{ active: activeCategory === '' }" @click="activeCategory = ''">
+              <span class="cat-name">📋 全部新闻</span>
+            </li>
+            <li v-for="c in categories" :key="c.id"
+                :class="{ active: activeCategory === c.id }"
+                @click="activeCategory = c.id">
+              <span class="cat-name">{{ categoryIcon(c.name) }} {{ c.name }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="sidebar-card stats-card">
+          <h3>📊 数据统计</h3>
+          <div class="stats-grid">
+            <div class="stat-block">
+              <span class="stat-block-num">{{ total }}</span>
+              <span class="stat-block-label">新闻总数</span>
+            </div>
+            <div class="stat-block">
+              <span class="stat-block-num">{{ categories.length }}</span>
+              <span class="stat-block-label">新闻分类</span>
+            </div>
           </div>
+        </div>
+      </aside>
+
+      <!-- 中间：新闻列表 -->
+      <div class="main-content">
+        <!-- 搜索 -->
+        <div class="filter-bar">
+          <h2 class="section-title">
+            <span class="section-icon">{{ activeCategory ? categoryIcon(activeCategoryName) : '📰' }}</span>
+            {{ activeCategoryName || '全部新闻' }}
+          </h2>
           <div class="search-box">
             <el-input
               v-model="keyword"
@@ -94,7 +107,7 @@
         </div>
 
         <!-- 新闻卡片列表 -->
-        <div v-loading="loading" class="news-grid">
+        <div v-loading="loading" class="news-list">
           <div v-if="newsList.length === 0 && !loading" class="empty-state">
             <div class="empty-icon">📭</div>
             <p>暂无新闻</p>
@@ -126,6 +139,7 @@
                 <span class="card-views">
                   <el-icon><View /></el-icon>{{ item.viewCount }}
                 </span>
+                <span class="card-likes">👍 {{ item.likeCount }}</span>
               </div>
             </div>
           </article>
@@ -144,37 +158,11 @@
         </div>
       </div>
 
-      <!-- 侧边栏 -->
-      <aside class="sidebar">
-        <!-- 统计卡片 -->
-        <div class="sidebar-card stats-card">
-          <h3>📊 数据统计</h3>
-          <div class="stats-grid">
-            <div class="stat-block">
-              <span class="stat-block-num">{{ total }}</span>
-              <span class="stat-block-label">新闻总数</span>
-            </div>
-            <div class="stat-block">
-              <span class="stat-block-num">{{ categories.length }}</span>
-              <span class="stat-block-label">新闻分类</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- 分类列表 -->
-        <div class="sidebar-card">
-          <h3>📁 新闻分类</h3>
-          <ul class="sidebar-categories">
-            <li v-for="c in categories" :key="c.id" @click="activeCategory = c.id">
-              <span class="cat-name">{{ categoryIcon(c.name) }} {{ c.name }}</span>
-              <el-icon><ArrowRight /></el-icon>
-            </li>
-          </ul>
-        </div>
-
+      <!-- 右侧边栏 -->
+      <aside class="sidebar sidebar-right">
         <!-- 热门文章 -->
         <div class="sidebar-card" v-if="hotNews.length">
-          <h3>🔥 热门文章</h3>
+          <h3>🔥 热门排行</h3>
           <ul class="hot-list">
             <li v-for="(item, index) in hotNews" :key="item.id" @click="$router.push(`/news/${item.id}`)">
               <span class="hot-rank" :class="{ 'rank-top': index < 3 }">{{ index + 1 }}</span>
@@ -184,6 +172,25 @@
               </div>
             </li>
           </ul>
+        </div>
+
+        <!-- 最新评论 / 公告 -->
+        <div class="sidebar-card">
+          <h3>📢 公告</h3>
+          <div class="notice-list">
+            <div class="notice-item">
+              <span class="notice-dot"></span>
+              <span>欢迎来到校园新闻系统！</span>
+            </div>
+            <div class="notice-item">
+              <span class="notice-dot"></span>
+              <span>登录后可发表评论和点赞</span>
+            </div>
+            <div class="notice-item">
+              <span class="notice-dot"></span>
+              <span>管理员可进入后台管理新闻</span>
+            </div>
+          </div>
         </div>
       </aside>
     </div>
@@ -205,8 +212,14 @@ const page = ref(1)
 const total = ref(0)
 
 const hotNews = computed(() =>
-  [...newsList.value].sort((a, b) => b.viewCount - a.viewCount).slice(0, 5)
+  [...newsList.value].sort((a, b) => b.viewCount - a.viewCount).slice(0, 8)
 )
+
+const activeCategoryName = computed(() => {
+  if (!activeCategory.value) return ''
+  const cat = categories.value.find(c => c.id === activeCategory.value)
+  return cat ? cat.name : ''
+})
 
 function categoryIcon(name) {
   const icons = { '校园动态': '🏫', '通知公告': '📢', '学术科研': '🔬', '文体活动': '⚽', '就业实习': '💼' }
@@ -251,7 +264,7 @@ onMounted(async () => {
   background: linear-gradient(135deg, #4f6ef7 0%, #7c5bf5 50%, #a855f7 100%);
   border-radius: 20px;
   padding: 48px 40px;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
   overflow: hidden;
   color: #fff;
 }
@@ -265,9 +278,7 @@ onMounted(async () => {
   margin: 0 0 8px;
   letter-spacing: -0.5px;
 }
-.hero-dot {
-  color: #fbbf24;
-}
+.hero-dot { color: #fbbf24; }
 .hero-subtitle {
   font-size: 16px;
   opacity: 0.85;
@@ -289,7 +300,6 @@ onMounted(async () => {
   font-size: 13px;
   opacity: 0.75;
 }
-
 .hero-decoration {
   position: absolute;
   top: 0;
@@ -307,248 +317,82 @@ onMounted(async () => {
 .c2 { width: 120px; height: 120px; bottom: -20px; right: 80px; }
 .c3 { width: 80px; height: 80px; top: 30px; right: 180px; background: rgba(255, 255, 255, 0.05); }
 
-/* ===== Featured Section ===== */
-.featured-section {
-  margin-bottom: 32px;
+/* ===== Carousel ===== */
+.carousel-section {
+  margin-bottom: 24px;
 }
-.section-header {
-  margin-bottom: 16px;
-}
-.section-header h2 {
-  font-size: 20px;
-  font-weight: 700;
-  color: #1a1a2e;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.featured-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 16px;
-}
-.featured-card {
-  position: relative;
-  border-radius: 16px;
+.news-carousel {
+  border-radius: 20px;
   overflow: hidden;
+}
+.news-carousel :deep(.el-carousel__container) {
+  border-radius: 20px;
+}
+.news-carousel :deep(.el-carousel__indicator button) {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+.news-carousel :deep(.el-carousel__indicator.is-active button) {
+  background-color: #4f6ef7;
+}
+.carousel-slide {
+  position: relative;
+  height: 100%;
   cursor: pointer;
-  height: 220px;
-  transition: transform 0.3s, box-shadow 0.3s;
 }
-.featured-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
-}
-.featured-main {
-  grid-row: span 1;
-  height: 220px;
-}
-.featured-img {
-  width: 100%;
-  height: 100%;
-}
-.featured-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.featured-img.placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.carousel-bg {
+  position: absolute;
+  inset: 0;
   background: linear-gradient(135deg, #667eea, #764ba2);
-  color: rgba(255, 255, 255, 0.3);
-  font-size: 24px;
-  font-weight: 700;
+  background-size: cover;
+  background-position: center;
 }
-.featured-overlay {
+.carousel-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.1) 100%);
+}
+.carousel-content {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 20px;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  padding: 40px 48px;
   color: #fff;
+  z-index: 2;
 }
-.featured-overlay h3 {
-  margin: 6px 0 4px;
-  font-size: 16px;
-  font-weight: 600;
+.carousel-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 10px 0 8px;
+  line-height: 1.3;
+  max-width: 700px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+.carousel-summary {
+  font-size: 15px;
+  opacity: 0.85;
+  margin: 0 0 12px;
+  max-width: 600px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-.featured-summary {
+.carousel-meta {
+  display: flex;
+  gap: 16px;
   font-size: 13px;
-  opacity: 0.8;
-  margin: 4px 0 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.featured-meta {
-  font-size: 12px;
-  opacity: 0.6;
-  margin-top: 4px;
-  display: inline-block;
+  opacity: 0.7;
 }
 
-/* ===== Content Wrapper ===== */
+/* ===== Content Wrapper: 3-column ===== */
 .content-wrapper {
   display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 24px;
+  grid-template-columns: 220px 1fr 280px;
+  gap: 20px;
 }
 
-/* ===== Filter Section ===== */
-.filter-section {
-  margin-bottom: 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-.category-tabs {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.cat-tab {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 8px 16px;
-  border: 1.5px solid #e8e8e8;
-  border-radius: 24px;
-  background: #fff;
-  font-size: 13px;
-  color: #555;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-.cat-tab:hover {
-  border-color: #4f6ef7;
-  color: #4f6ef7;
-}
-.cat-tab.active {
-  background: linear-gradient(135deg, #4f6ef7, #7c5bf5);
-  border-color: transparent;
-  color: #fff;
-}
-.cat-icon {
-  font-size: 14px;
-}
-.search-box {
-  flex-shrink: 0;
-}
-.search-input {
-  width: 240px;
-}
-.search-input :deep(.el-input__wrapper) {
-  border-radius: 20px;
-}
-
-/* ===== News Grid ===== */
-.news-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-}
-.news-card {
-  background: #fff;
-  border-radius: 16px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform 0.25s, box-shadow 0.25s;
-  display: flex;
-  flex-direction: column;
-}
-.news-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-}
-.card-cover {
-  height: 160px;
-  overflow: hidden;
-}
-.card-cover img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.4s;
-}
-.news-card:hover .card-cover img {
-  transform: scale(1.05);
-}
-.card-cover.placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
-  color: #6366f1;
-  font-size: 18px;
-  font-weight: 700;
-}
-.card-body {
-  padding: 16px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-.card-tags {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 8px;
-}
-.card-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #1a1a2e;
-  margin: 0 0 8px;
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.card-summary {
-  font-size: 13px;
-  color: #777;
-  margin: 0 0 12px;
-  line-height: 1.5;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  flex: 1;
-}
-.card-footer {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 12px;
-  color: #aaa;
-}
-.card-author,
-.card-views {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-}
-
-/* ===== Pagination ===== */
-.pagination-wrap {
-  text-align: center;
-  margin-top: 24px;
-  padding-bottom: 8px;
-}
-
-/* ===== Sidebar ===== */
+/* ===== Sidebar (shared) ===== */
 .sidebar {
   display: flex;
   flex-direction: column;
@@ -563,30 +407,7 @@ onMounted(async () => {
   font-size: 15px;
   font-weight: 600;
   color: #1a1a2e;
-  margin: 0 0 16px;
-}
-
-/* Stats card */
-.stats-card .stats-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-.stat-block {
-  text-align: center;
-  padding: 12px;
-  background: #f5f7ff;
-  border-radius: 12px;
-}
-.stat-block-num {
-  display: block;
-  font-size: 24px;
-  font-weight: 800;
-  color: #4f6ef7;
-}
-.stat-block-label {
-  font-size: 12px;
-  color: #888;
+  margin: 0 0 14px;
 }
 
 /* Sidebar categories */
@@ -597,23 +418,46 @@ onMounted(async () => {
 }
 .sidebar-categories li {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   padding: 10px 12px;
   border-radius: 10px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s;
   font-size: 14px;
-  color: #444;
+  color: #555;
+  margin-bottom: 2px;
 }
 .sidebar-categories li:hover {
   background: #f5f7ff;
   color: #4f6ef7;
 }
-.cat-name {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.sidebar-categories li.active {
+  background: linear-gradient(135deg, #4f6ef7, #7c5bf5);
+  color: #fff;
+  font-weight: 500;
+}
+
+/* Stats card */
+.stats-card .stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.stat-block {
+  text-align: center;
+  padding: 12px 8px;
+  background: #f5f7ff;
+  border-radius: 12px;
+}
+.stat-block-num {
+  display: block;
+  font-size: 22px;
+  font-weight: 800;
+  color: #4f6ef7;
+}
+.stat-block-label {
+  font-size: 11px;
+  color: #888;
 }
 
 /* Hot list */
@@ -629,13 +473,10 @@ onMounted(async () => {
   padding: 10px 0;
   border-bottom: 1px solid #f5f5f5;
   cursor: pointer;
+  transition: background 0.15s;
 }
-.hot-list li:last-child {
-  border-bottom: none;
-}
-.hot-list li:hover .hot-title {
-  color: #4f6ef7;
-}
+.hot-list li:last-child { border-bottom: none; }
+.hot-list li:hover .hot-title { color: #4f6ef7; }
 .hot-rank {
   flex-shrink: 0;
   width: 22px;
@@ -673,11 +514,162 @@ onMounted(async () => {
   color: #bbb;
 }
 
+/* Notice list */
+.notice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.notice-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: #555;
+  line-height: 1.5;
+}
+.notice-dot {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4f6ef7;
+  margin-top: 6px;
+}
+
+/* ===== Main Content ===== */
+.main-content {
+  min-width: 0;
+}
+
+/* Filter bar */
+.filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 16px;
+}
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.search-box { flex-shrink: 0; }
+.search-input { width: 220px; }
+.search-input :deep(.el-input__wrapper) {
+  border-radius: 20px;
+}
+
+/* News list */
+.news-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.news-card {
+  display: flex;
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+.news-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
+}
+.card-cover {
+  width: 200px;
+  min-height: 140px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.card-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s;
+}
+.news-card:hover .card-cover img {
+  transform: scale(1.05);
+}
+.card-cover.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+  color: #6366f1;
+  font-size: 16px;
+  font-weight: 700;
+}
+.card-body {
+  padding: 16px 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.card-tags {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0 0 6px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.card-summary {
+  font-size: 13px;
+  color: #888;
+  margin: 0 0 12px;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex: 1;
+}
+.card-footer {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 12px;
+  color: #aaa;
+}
+.card-author,
+.card-views,
+.card-likes {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Pagination */
+.pagination-wrap {
+  text-align: center;
+  margin-top: 20px;
+  padding-bottom: 8px;
+}
+
 /* Empty state */
 .empty-state {
-  grid-column: span 2;
   text-align: center;
   padding: 60px 0;
+  background: #fff;
+  border-radius: 16px;
 }
 .empty-icon {
   font-size: 48px;
@@ -689,23 +681,30 @@ onMounted(async () => {
 }
 
 /* ===== Responsive ===== */
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
   .content-wrapper {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 260px;
   }
-  .sidebar {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+  .sidebar-left {
+    display: none;
   }
 }
 @media (max-width: 768px) {
+  .content-wrapper {
+    grid-template-columns: 1fr;
+  }
+  .sidebar-left,
+  .sidebar-right {
+    display: none;
+  }
   .hero { padding: 32px 24px; }
   .hero-title { font-size: 28px; }
-  .hero-stats { gap: 20px; }
-  .featured-grid { grid-template-columns: 1fr; }
-  .news-grid { grid-template-columns: 1fr; }
-  .sidebar { grid-template-columns: 1fr; }
-  .filter-section { flex-direction: column; align-items: stretch; }
+  .carousel-title { font-size: 20px; }
+  .carousel-content { padding: 24px; }
+  .news-carousel :deep(.el-carousel__container) { height: 260px !important; }
+  .news-card { flex-direction: column; }
+  .card-cover { width: 100%; min-height: 160px; }
+  .filter-bar { flex-direction: column; align-items: stretch; }
   .search-input { width: 100%; }
 }
 </style>

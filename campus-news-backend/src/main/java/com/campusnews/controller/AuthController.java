@@ -1,7 +1,9 @@
 package com.campusnews.controller;
 
 import com.campusnews.common.Result;
+import com.campusnews.dto.ChangePasswordDTO;
 import com.campusnews.dto.LoginDTO;
+import com.campusnews.dto.UpdateProfileDTO;
 import com.campusnews.dto.UserDTO;
 import com.campusnews.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,5 +41,19 @@ public class AuthController {
     public Result<?> getCurrentUser(HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         return userService.getCurrentUser(userId);
+    }
+
+    @Operation(summary = "修改个人信息")
+    @PutMapping("/profile")
+    public Result<?> updateProfile(@RequestBody UpdateProfileDTO dto, HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        return userService.updateProfile(userId, dto);
+    }
+
+    @Operation(summary = "修改密码")
+    @PutMapping("/password")
+    public Result<?> changePassword(@Valid @RequestBody ChangePasswordDTO dto, HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        return userService.changePassword(userId, dto);
     }
 }

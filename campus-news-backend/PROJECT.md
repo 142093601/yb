@@ -101,6 +101,11 @@ workspace/（Git 仓库根目录）
 │           ├── application.yml                  # 主配置：端口8080、JWT密钥/过期时间、MyBatis配置、文件上传路径
 │           └── application-dev.yml              # 数据库连接配置（这个要改成本地的）
 │
+├── campus-news-backend/
+│   └── sql/
+│       ├── schema.sql            # 建库建表脚本
+│       └── seed_data.sql         # 🆕 种子数据（15篇新闻 + 20条评论 + 4个测试用户）
+│
 └── campus-news-frontend/         # 前端（Vue 3 + Vite）
     ├── package.json              # 依赖：vue, vue-router, pinia, axios, element-plus
     ├── vite.config.js            # Vite 配置，开发代理 /api → localhost:8080
@@ -108,7 +113,7 @@ workspace/（Git 仓库根目录）
     ├── .gitignore
     └── src/
         ├── main.js               # 入口：注册 Element Plus（中文locale）+ Pinia + Router + 全部图标
-        ├── App.vue               # 就一个 <router-view />
+        ├── App.vue               # 全局样式重置 + 自定义滚动条 + 统一主色调(#4f6ef7)
         │
         ├── api/                  # 接口层，每个模块一个文件
         │   ├── auth.js           # login, register, getUserInfo
@@ -135,23 +140,30 @@ workspace/（Git 仓库根目录）
         │                           # - meta.requiresAdmin → 检查 role=ADMIN
         │
         └── views/
-            ├── front/            # 前台页面
-            │   ├── Layout.vue    # 顶栏（logo + 登录/用户下拉菜单）+ <router-view> + 底栏
-            │   ├── Login.vue     # 登录表单，成功后根据角色跳转（ADMIN→后台，其他→首页）
-            │   ├── Register.vue  # 注册表单，带确认密码校验
-            │   ├── Home.vue      # 首页：
-            │   │                   # - 顶部轮播：el-carousel 显示置顶新闻
-            │   │                   # - 分类筛选：el-radio-group
-            │   │                   # - 搜索框
-            │   │                   # - 新闻卡片列表（封面+标题+摘要+分类标签+浏览量）
-            │   │                   # - 底部分页
-            │   └── NewsDetail.vue # 详情页：
-            │                       # - 标题+元信息（分类/作者/时间/浏览/点赞）
-            │                       # - 富文本内容（v-html）
-            │                       # - 点赞按钮
-            │                       # - 评论区（登录可发表，未登录提示）
+            ├── front/            # 前台页面（v2 已全面美化）
+            │   ├── Layout.vue    # 🆕 毛玻璃顶栏 + Logo品牌区 + 导航高亮
+            │   │                   # - 用户头像 + 下拉菜单（显示角色标签）
+            │   │                   # - 注册按钮（渐变色）
+            │   │                   # - 丰富 Footer（品牌/快速导航/分类链接/版权）
+            │   ├── Login.vue     # 🆕 左右分栏布局：
+            │   │                   # - 左：品牌展示区（蓝紫渐变）+ 功能亮点
+            │   │                   # - 右：登录表单（圆角按钮 + 图标输入框）
+            │   │                   # - 移动端自动隐藏左侧面板
+            │   ├── Register.vue  # 🆕 同样左右分栏，青绿渐变 + 注册福利展示
+            │   ├── Home.vue      # 🆕 改动最大的页面：
+            │   │                   # - Hero 统计区（渐变背景 + 新闻数/分类数/用户数）
+            │   │                   # - 热点推荐：3格卡片式置顶新闻
+            │   │                   # - 分类筛选：pill按钮式（带emoji图标，点击切换）
+            │   │                   # - 新闻列表：双列卡片网格（封面图+标签+摘要+元信息）
+            │   │                   # - 侧边栏：数据统计 / 分类快捷入口 / 热门排行TOP5
+            │   │                   # - 响应式布局（≤1024px 单列，≤768px 全部堆叠）
+            │   └── NewsDetail.vue # 🆕 改进：
+            │                       # - 面包屑导航（首页 > 分类 > 正文）
+            │                       # - 左右布局：正文 + 侧边文章信息卡
+            │                       # - 优雅点赞按钮（hover动效 + 计数器）
+            │                       # - 头像化评论区 + 居中登录提示
             │
-            └── admin/            # 后台管理（需 ADMIN 权限）
+            └── admin/            # 后台管理（需 ADMIN 权限，本次未改动）
                 ├── AdminLayout.vue    # 左侧菜单（新闻/分类/评论/用户）+ 右侧内容区
                 ├── NewsManage.vue     # 新闻列表表格：发布/下架、置顶、编辑、删除
                 ├── NewsEdit.vue       # 新闻编辑：标题、分类选择、封面上传、摘要、内容（textarea HTML）
@@ -216,9 +228,22 @@ workspace/（Git 仓库根目录）
 | replyNickname | 被回复人的昵称 |
 | status | 0待审核 / 1已通过 / 2已拒绝 |
 
-### 默认数据
+### 默认数据（schema.sql 自带）
 - 管理员：`admin` / `admin123`（BCrypt 加密存储）
 - 预设分类：校园动态、通知公告、学术科研、文体活动、就业实习
+
+### 测试数据（seed_data.sql，需手动导入）
+执行 `seed_data.sql` 后额外获得：
+- **15 篇新闻文章**：每个分类 2-3 篇，含标题、摘要、完整 HTML 正文、浏览量、点赞数
+- **20 条评论**：分布于 7 篇新闻下，状态均为"已通过"
+- **4 位测试用户**（密码均为 `admin123`）：
+
+| 用户名 | 昵称 | 角色 |
+|--------|------|------|
+| zhangsan | 小张同学 | USER |
+| lisi | 李学姐 | USER |
+| wangwu | 王五不姓王 | USER |
+| xiaoming | 明明同学 | USER |
 
 ## 五、认证流程
 
@@ -301,6 +326,9 @@ java -version
 # 2. 建库建表
 mysql -u root -p < campus-news-backend/sql/schema.sql
 
+# 3. 导入种子数据（可选，导入后有测试内容可看）
+mysql -u root -p < campus-news-backend/sql/seed_data.sql
+
 # 3. 修改数据库配置
 # 编辑 campus-news-backend/src/main/resources/application-dev.yml
 # 改成你本地的 MySQL 地址、用户名、密码
@@ -322,8 +350,8 @@ npm run dev
 ```
 
 ### 登录测试
-- 管理员：`admin` / `admin123`
-- 登录后可以进入 `/admin` 后台管理
+- 管理员：`admin` / `admin123`（可进入 `/admin` 后台管理）
+- 普通用户：`zhangsan` / `admin123`（仅前台浏览/评论/点赞）
 
 ## 八、开发约定
 
@@ -349,10 +377,35 @@ npm run dev
 4. **搜索** — 标题 like 模糊搜索，无全文检索
 5. **默认头像** — 未上传头像时显示空白
 6. **无单元测试**
-7. **前端样式** — 基础 Element Plus，无自定义主题
-8. **详情页获取** — 编辑时用列表接口筛选，应直接 getById
+7. **详情页获取** — 编辑时用列表接口筛选，应直接 getById
+8. ~~前端样式~~ — ✅ v2 已美化，但仍有提升空间（可加暗色模式、动画等）
 
-## 十、已修复的问题
+## 十、更新日志
+
+### v2 — 2026-03-24 前端美化 + 数据库种子数据
+
+#### 前端美化（6 个文件重写）
+- **App.vue**：全局样式重置、自定义滚动条、统一主色调 (#4f6ef7)
+- **Layout.vue**：毛玻璃顶栏 + 品牌Logo区 + 导航高亮 + 用户头像下拉菜单（显示角色标签）+ 丰富 Footer
+- **Home.vue**（改动最大）：
+  - Hero 统计区（渐变背景 + 新闻数/分类数/用户数）
+  - 热点推荐：3 格卡片式置顶新闻
+  - 分类筛选：pill 按钮式（带 emoji 图标）
+  - 新闻列表：双列卡片网格（封面图 + 标签 + 摘要 + 元信息）
+  - 侧边栏：数据统计 / 分类快捷入口 / 热门排行 TOP 5
+  - 响应式布局（≤1024px 单列，≤768px 全部堆叠）
+- **NewsDetail.vue**：面包屑导航、左右布局（正文 + 侧边信息卡）、头像化评论区、优雅点赞按钮
+- **Login.vue**：左右分栏布局（左侧品牌展示 + 渐变背景，右侧表单）
+- **Register.vue**：同样左右分栏，青绿渐变 + 注册福利展示
+
+#### 数据库种子数据（seed_data.sql，新文件）
+- 15 篇新闻文章（每分类 2-3 篇，含完整 HTML 正文）
+- 20 条评论（状态均为"已通过"）
+- 4 位测试用户（zhangsan/lisi/wangwu/xiaoming，密码 admin123）
+
+---
+
+### 历史修复
 
 1. ~~BCryptPasswordEncoder 找不到~~ → 添加了 `spring-security-crypto` 依赖
 2. ~~application-dev.yml 未提交~~ → 从 .gitignore 中移除并补充提交

@@ -253,8 +253,10 @@ workspace/（Git 仓库根目录）
 ### 测试数据（seed_data.sql，需手动导入）
 执行 `seed_data.sql` 后额外获得：
 - **15 篇新闻文章**：每个分类 2-3 篇，含标题、摘要、完整 HTML 正文、浏览量、点赞数
-- **20 条评论**：分布于 7 篇新闻下，状态均为"已通过"
-- **4 位测试用户**（密码均为 `admin123`）：
+- **89 条评论**：覆盖全部 15 篇新闻，每篇 3-8 条评论，状态均为"已通过"
+- **34 位测试用户**（密码均为 `admin123`）：
+  - **30 位普通用户（USER）**：zhangsan、lisi、wangwu、xiaoming、lihua、hanmeimei、lilei、xiaohong、zhaoliu、sunqi、zhouba、wujiu、zhengshi、huangyi、xuer、hesan、luosi、mawu、mouliu、songqi、dengba、fengjiu、caoshi、shenyi、haner、yangsan、zhusi、qinwu、youliu、xuqi
+  - **4 位编辑（EDITOR）**：editor1、editor2、editor3、editor4
 
 | 用户名 | 昵称 | 角色 |
 |--------|------|------|
@@ -262,6 +264,36 @@ workspace/（Git 仓库根目录）
 | lisi | 李学姐 | USER |
 | wangwu | 王五不姓王 | USER |
 | xiaoming | 明明同学 | USER |
+| lihua | 李华同学 | USER |
+| hanmeimei | 韩梅梅 | USER |
+| lilei | 李雷 | USER |
+| xiaohong | 小红帽 | USER |
+| zhaoliu | 赵六爱吃面 | USER |
+| sunqi | 孙七爱学习 | USER |
+| zhouba | 周八不加班 | USER |
+| wujiu | 吴九爱运动 | USER |
+| zhengshi | 郑十全十美 | USER |
+| huangyi | 黄一飞冲天 | USER |
+| xuer | 薛二不吃亏 | USER |
+| hesan | 何三省吾身 | USER |
+| luosi | 罗四两拨千斤 | USER |
+| mawu | 马五马分尸 | USER |
+| mouliu | 牟六六大顺 | USER |
+| songqi | 宋七上八下 | USER |
+| dengba | 邓八面玲珑 | USER |
+| fengjiu | 冯九九归一 | USER |
+| caoshi | 曹十拿九稳 | USER |
+| shenyi | 沈一心一意 | USER |
+| haner | 韩二话不说 | USER |
+| yangsan | 杨三阳开泰 | USER |
+| zhusi | 朱四海为家 | USER |
+| qinwu | 秦五湖四海 | USER |
+| youliu | 尤六韬三略 | USER |
+| xuqi | 许七步成诗 | USER |
+| editor1 | 编辑小王 | EDITOR |
+| editor2 | 编辑小陈 | EDITOR |
+| editor3 | 编辑小刘 | EDITOR |
+| editor4 | 编辑小赵 | EDITOR |
 
 ## 五、认证流程
 
@@ -401,6 +433,15 @@ npm run dev
 8. ~~前端样式~~ — ✅ v2 已美化，但仍有提升空间（可加暗色模式、动画等）
 
 ## 十、更新日志
+
+### v5 — 2026-03-24 测试数据扩充
+
+#### seed_data.sql 重写
+- **测试用户**：从 4 位扩充至 **34 位**（30 位普通用户 + 4 位编辑）
+- **评论数据**：从 20 条扩充至 **89 条**，覆盖全部 15 篇新闻，每篇 3-8 条评论
+- 用户昵称采用谐音梗命名风格（如"赵六爱吃面"、"孙七爱学习"等），方便区分
+- 所有测试用户密码统一为 `admin123`（BCrypt 加密）
+- 编辑用户（EDITOR 角色）可用于测试编辑权限相关功能
 
 ### v4 — 2026-03-24 搜索页 + 归档页 + 导航栏扩展
 
